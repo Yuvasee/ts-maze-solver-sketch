@@ -70,10 +70,6 @@ class Maze {
     }
 
     get solution(): MazeSolution | undefined {
-        if (!Maze.isMaze(maze)) {
-            throw new Error("Invalid maze");
-        }
-
         let currentCoords = maze.startCoords;
 
         const solution: MazeSolution = [currentCoords];
@@ -101,9 +97,9 @@ class Maze {
             solution.push([...currentCoords]);
         } while (maze.cell(currentCoords) === MazeCell.Empty);
 
-        // TODO: optimize solution to drop dead ends
-
-        return maze.cell(currentCoords) === MazeCell.Exit ? solution : undefined;
+        return maze.cell(currentCoords) === MazeCell.Exit
+            ? Maze.optimizeSolution(solution)
+            : undefined;
     }
 
     get startCoords(): Vector {
@@ -153,6 +149,38 @@ class Maze {
         });
 
         return directions;
+    }
+
+    static optimizeSolution(solution: MazeSolution) {
+        const solutionCellIndexes: Record<string, number[]> = {};
+        solution.forEach((v, i) => {
+            const key = JSON.stringify(v);
+            if (solutionCellIndexes[key]) {
+                solutionCellIndexes[key]?.push(i);
+            } else {
+                solutionCellIndexes[key] = [i];
+            }
+        });
+
+        const duplicatedCells = Object.keys(solutionCellIndexes)
+            .filter((key) => solutionCellIndexes[key].length > 1)
+            .sort((a, b) => (solutionCellIndexes[a][0] > solutionCellIndexes[a][0] ? -1 : 1));
+
+        let lastCutIndex = 0;
+        let optimizedSolution: MazeSolution = [];
+
+        duplicatedCells.forEach((cell) => {
+            const cellIndexes = solutionCellIndexes[cell];
+            const fromIndex = cellIndexes[0];
+            const toIndex = cellIndexes[cellIndexes.length - 1];
+
+            if (lastCutIndex >= toIndex) return;
+
+            optimizedSolution = optimizedSolution.concat(solution.slice(lastCutIndex, fromIndex));
+            lastCutIndex = toIndex;
+        });
+
+        return optimizedSolution.concat(solution.slice(lastCutIndex));
     }
 
     // TODO: support right wall follower
@@ -211,7 +239,11 @@ X      XX XX X
 XXXXXX XX  X X
 XXXXXXXXXXOXXX
 `;
+console.log(mazeSchema);
 
 const maze = new Maze(mazeSchema);
-console.log(mazeSchema);
-console.log("solution: ", maze.solution);
+const solution = maze.solution;
+console.log("Solution: ", solution);
+
+const optimizedSolution = Maze.optimizeSolution(solution);
+console.log("Optimized solution: ", optimizedSolution);
