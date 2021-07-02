@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
         "noImplicitAny": true,
-        "target": "ESNext"
+        "target": "ESNext",
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true
     },
     "files": ["maze.ts"]
 }
