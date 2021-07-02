@@ -78,23 +78,6 @@ class Maze {
 
         const solution: MazeSolution = [currentCoords];
 
-        function leftWallFollowerNextStep(availableDirections: Direction[], prevVector: Vector) {
-            const prevDirection = vectorToDirection(prevVector);
-            const defaultDirectionsPriority = [
-                Direction.Up,
-                Direction.Left,
-                Direction.Down,
-                Direction.Right,
-            ];
-            const directionsPriority = defaultDirectionsPriority
-                .slice(prevDirection)
-                .concat(defaultDirectionsPriority.slice(0, prevDirection));
-            const nextDirection = directionsPriority.find((direction) =>
-                availableDirections.includes(direction)
-            );
-            return directionToVector(nextDirection);
-        }
-
         do {
             console.log("Solution: ", solution);
             console.log("Coords: ", currentCoords);
@@ -107,7 +90,7 @@ class Maze {
             } else {
                 const prevVector = subtract(currentCoords, solution[solution.length - 2]) as Vector;
                 console.log("Prev vector: ", prevVector);
-                const vector = leftWallFollowerNextStep(directions, prevVector);
+                const vector = Maze.getWallFollowerNextVector(directions, prevVector);
                 console.log("Vector: ", vector);
                 currentCoords = add(currentCoords, vector) as Vector;
             }
@@ -170,6 +153,24 @@ class Maze {
         });
 
         return directions;
+    }
+
+    // TODO: support right wall follower
+    static getWallFollowerNextVector(availableDirections: Direction[], prevVector: Vector) {
+        const prevDirection = vectorToDirection(prevVector);
+        const defaultDirectionsPriority = [
+            Direction.Up,
+            Direction.Left,
+            Direction.Down,
+            Direction.Right,
+        ];
+        const directionsPriority = defaultDirectionsPriority
+            .slice(prevDirection)
+            .concat(defaultDirectionsPriority.slice(0, prevDirection));
+        const nextDirection = directionsPriority.find((direction) =>
+            availableDirections.includes(direction)
+        );
+        return directionToVector(nextDirection);
     }
 
     static isMaze(maze: unknown): maze is Maze {
