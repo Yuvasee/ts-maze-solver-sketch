@@ -244,6 +244,3 @@ console.log(mazeSchema);
 const maze = new Maze(mazeSchema);
 const solution = maze.solution;
 console.log("Solution: ", solution);
-
-const optimizedSolution = Maze.optimizeSolution(solution);
-console.log("Optimized solution: ", optimizedSolution);
